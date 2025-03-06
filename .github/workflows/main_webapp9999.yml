@@ -3,7 +3,7 @@ name: Deploy Node.js App to Azure
 on:
   push:
     branches:
-      - main
+      - main  # Deploy only when pushing to main branch
 
 jobs:
   build-and-deploy:
@@ -20,20 +20,15 @@ jobs:
         cache: 'npm'
 
     - name: Install Dependencies
-      run: npm install --omit=dev  # Skip devDependencies
+      run: npm install --omit=dev  # Skip dev dependencies
 
     - name: Build Application (if needed)
       run: npm run build || echo "No build step defined"
 
-    - name: Create ZIP Package
-      run: |
-        mkdir deployment_package
-        cp -r . deployment_package
-        cd deployment_package
-        zip -r ../app.zip . -x "node_modules/*" ".git/*"
-        cd ..
+    - name: Zip Application for Deployment
+      run: zip -r app.zip . -x "node_modules/*" ".git/*"
 
-    - name: Azure Login
+    - name: Azure Login  # ✅ Ensures authentication before deployment
       uses: azure/login@v1
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
@@ -41,5 +36,5 @@ jobs:
     - name: Deploy to Azure Web App
       uses: azure/webapps-deploy@v3
       with:
-        app-name: 'webapp9999-b3cxbzg3cjgya4dn'
+        app-name: 'webapp9999'  # Replace with your actual Azure Web App Name
         package: 'app.zip'
